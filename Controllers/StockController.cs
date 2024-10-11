@@ -7,6 +7,7 @@ using api.DTOs.Stock;
 using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -21,18 +22,18 @@ namespace api.Controllers
 
         }
         [HttpGet]
-        public ActionResult GetAll()
+        public async Task<ActionResult> GetAll()
         {
-            var stocks = _context.Stocks
+            var stocks = await _context.Stocks
             .Select(s => s.ToStockDTO())
-            .ToList();
+            .ToListAsync();
 
             return Ok(stocks);
         }
         [HttpGet("{id}")]
-        public ActionResult GetById([FromRoute] int id)
+        public async Task<ActionResult> GetById([FromRoute] int id)
         {
-            var stock = _context.Stocks.Find(id);
+            var stock = await _context.Stocks.FindAsync(id);
 
             if (stock == null)
             {
@@ -41,13 +42,56 @@ namespace api.Controllers
             return Ok(stock.ToStockDTO());
         }
         [HttpPost]
-        public ActionResult Create([FromBody] CreateStockRequestDTO stockDTO)
+        public async Task<ActionResult> Create([FromBody] CreateStockRequestDTO stockDTO)
         {
             var stockForm = stockDTO.ToStockCreateDTO();
 
-            _context.Stocks.Add(stockForm);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new {id = stockForm.Id}, stockForm.ToStockDTO());
+            await _context.Stocks.AddAsync(stockForm);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetById), new { id = stockForm.Id }, stockForm.ToStockDTO());
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDTO updateDTO)
+        {
+            var stockModel = await _context.Stocks.FirstOrDefaultAsync(x => x.Id == id); 
+            // Remainder
+
+            //Find will be faster but for another cases (for exlp. if we need to search by Company Name),
+            //but FirstOrDefault is more flexible
+
+            if (stockModel == null)
+            {
+                return NotFound();
+            }
+
+            stockModel.Symbol = updateDTO.Symbol;
+            stockModel.CompanyName = updateDTO.CompanyName;
+            stockModel.Purchase = updateDTO.Purchase;
+            stockModel.LastDiv = updateDTO.LastDiv;
+            stockModel.Industry = updateDTO.Industry;
+            stockModel.MarketCap = updateDTO.MarketCap;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(stockModel.ToStockDTO());
+        }
+
+        [HttpDelete("{id}")]
+
+        public async Task<ActionResult> Delete([FromRoute] int id)
+        {
+            var stockModel = await _context.Stocks.FindAsync(id);
+
+            if (stockModel == null)
+            {
+                return NotFound();
+            }
+
+            _context.Stocks.Remove(stockModel);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
     }
