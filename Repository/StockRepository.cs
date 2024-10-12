@@ -44,12 +44,12 @@ namespace api.Repository
 
         public async Task<List<Stock>> GetAllStocksAsync()
         {
-            return await _context.Stocks.ToListAsync();
+            return await _context.Stocks.Include(x => x.Comments).ToListAsync();
         }
 
         public async Task<Stock?> GetStockByIdAsync(int id)
         {
-            return await _context.Stocks.FindAsync(id);
+            return await _context.Stocks.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Stock?> UpdateStockAsync(int id, UpdateStockRequestDTO updateDTO)
@@ -71,6 +71,11 @@ namespace api.Repository
             await _context.SaveChangesAsync();
 
             return stock;
+        }
+
+        public Task<bool> StockExistAsync(int stockId)
+        {
+            return _context.Stocks.AnyAsync(x => x.Id == stockId);
         }
     }
 }
