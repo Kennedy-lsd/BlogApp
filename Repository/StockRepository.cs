@@ -54,7 +54,7 @@ namespace api.Repository
 
         public async Task<Stock?> UpdateStockAsync(int id, UpdateStockRequestDTO updateDTO)
         {
-            var stock = await _context.Stocks.FirstOrDefaultAsync(x => x.Id == id);
+            var stock = await _context.Stocks.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id);
 
             if (stock == null)
             {
