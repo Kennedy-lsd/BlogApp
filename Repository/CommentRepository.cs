@@ -7,6 +7,7 @@ using api.DTOs.Comment;
 using api.Interfaces;
 using api.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Repository
@@ -57,6 +58,18 @@ namespace api.Repository
 
             return comment;
         }
+
+        
+        public Task<ModelStateDictionary?> IsCommentValid(ModelStateDictionary modelState)
+        {
+            if (!modelState.IsValid)
+            {
+                return Task.FromResult<ModelStateDictionary?>(modelState);
+            }
+
+            return Task.FromResult<ModelStateDictionary?>(null);
+        }
+
 
         public async Task<Comment?> UpdateCommentAsync(int id, UpdateCommentRequestDTO updateComment)
         {

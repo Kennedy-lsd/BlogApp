@@ -7,6 +7,7 @@ using api.DTOs.Stock;
 using api.Interfaces;
 using api.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Repository
@@ -76,6 +77,16 @@ namespace api.Repository
         public Task<bool> StockExistAsync(int stockId)
         {
             return _context.Stocks.AnyAsync(x => x.Id == stockId);
+        }
+
+        public Task<ModelStateDictionary?> IsStockValid(ModelStateDictionary modelState)
+        {
+            if (!modelState.IsValid)
+            {
+                return Task.FromResult<ModelStateDictionary?>(modelState);
+            }
+
+            return Task.FromResult<ModelStateDictionary?>(null);
         }
     }
 }
