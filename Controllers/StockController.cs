@@ -7,6 +7,7 @@ using api.DTOs.Stock;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
+using api.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ namespace api.Controllers
 
         }
         [HttpGet]
-        public async Task<ActionResult> GetAll()
+        public async Task<ActionResult> GetAll([FromQuery] QueryObject query)
         {
             var isValid = await _stockRepo.IsStockValid(ModelState);
 
@@ -32,7 +33,7 @@ namespace api.Controllers
                 return BadRequest(isValid);
             }
 
-            var stocks = await _stockRepo.GetAllStocksAsync();
+            var stocks = await _stockRepo.GetAllStocksAsync(query);
 
             var stockDTO = stocks.Select(x => x.ToStockDTO());
 
