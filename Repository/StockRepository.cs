@@ -6,6 +6,7 @@ using api.Data;
 using api.DTOs.Stock;
 using api.Interfaces;
 using api.Models;
+using api.Utils;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
@@ -43,9 +44,33 @@ namespace api.Repository
         }
 
 
-        public async Task<List<Stock>> GetAllStocksAsync()
+        public async Task<List<Stock>> GetAllStocksAsync(QueryObject query)
         {
-            return await _context.Stocks.Include(x => x.Comments).ToListAsync();
+            var stocks = _context.Stocks.Include(x => x.Comments).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.CompanyName))
+            {
+                stocks = stocks.Where(x => x.CompanyName.Contains(query.CompanyName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Symbol))
+            {
+                stocks = stocks.Where(x => x.Symbol.Contains(query.Symbol));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                if (query.SortBy.Equals("Symbol", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = query.IsDecsending
+                    ? stocks.OrderByDescending(x => x.Symbol)
+                    : stocks.OrderBy(x => x.Symbol);
+                }
+            }
+
+            var skipNumber = (query.PageNumber - 1) * query.PageSize;
+
+            return await stocks.Skip(skipNumber).Take(query.PageSize).ToListAsync();
         }
 
         public async Task<Stock?> GetStockByIdAsync(int id)

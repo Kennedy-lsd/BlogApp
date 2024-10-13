@@ -4,13 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.DTOs.Stock;
 using api.Models;
+using api.Utils;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.Interfaces
 {
     public interface IStockRepository
     {
-        Task<List<Stock>> GetAllStocksAsync();
+        Task<List<Stock>> GetAllStocksAsync(QueryObject query);
         Task<Stock?> GetStockByIdAsync(int id);
         Task<Stock> CreateStockAsync(Stock stockModel);
         Task<bool> StockExistAsync(int stockId);
