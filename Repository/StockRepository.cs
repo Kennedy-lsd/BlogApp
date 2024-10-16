@@ -46,7 +46,7 @@ namespace api.Repository
 
         public async Task<List<Stock>> GetAllStocksAsync(QueryObject query)
         {
-            var stocks = _context.Stocks.Include(x => x.Comments).AsQueryable();
+            var stocks = _context.Stocks.Include(x => x.Comments).ThenInclude(c => c.AppUser).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.CompanyName))
             {
@@ -75,7 +75,7 @@ namespace api.Repository
 
         public async Task<Stock?> GetStockByIdAsync(int id)
         {
-            return await _context.Stocks.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Stocks.Include(x => x.Comments).ThenInclude(c => c.AppUser).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Stock?> UpdateStockAsync(int id, UpdateStockRequestDTO updateDTO)
